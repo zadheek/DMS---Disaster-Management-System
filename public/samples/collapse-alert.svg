@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Building collapse sample image">
+  <rect width="960" height="420" fill="#eef2ff"/>
+  <path d="M0 294c126-26 238-24 356 8 160 44 344 42 604-12v130H0Z" fill="#e2e8f0"/>
+  <g fill="#94a3b8">
+    <path d="M150 102h206v218H150Z"/>
+    <path d="M612 118h198v202H612Z"/>
+  </g>
+  <path d="M392 318 524 118l132 200Z" fill="#64748b"/>
+  <path d="M150 226 356 166v154H150Z" fill="#475569"/>
+  <g fill="#f8fafc">
+    <rect x="184" y="136" width="34" height="34"/>
+    <rect x="248" y="136" width="34" height="34"/>
+    <rect x="184" y="202" width="34" height="34"/>
+    <rect x="652" y="152" width="34" height="34"/>
+    <rect x="718" y="152" width="34" height="34"/>
+  </g>
+  <g fill="#334155">
+    <circle cx="468" cy="334" r="24"/>
+    <circle cx="538" cy="342" r="18"/>
+    <circle cx="600" cy="330" r="22"/>
+    <rect x="278" y="306" width="118" height="34" rx="8"/>
+    <rect x="636" y="306" width="126" height="34" rx="8"/>
+  </g>
+</svg>

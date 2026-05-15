@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Damaged road sample image">
+  <defs>
+    <linearGradient id="roadSky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#dbeafe"/>
+      <stop offset="1" stop-color="#f8fafc"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="420" fill="url(#roadSky)"/>
+  <path d="M0 270c124-50 266-54 420-18 180 42 330 34 540-26v194H0Z" fill="#bbf7d0"/>
+  <path d="M300 420 418 108h130l138 312Z" fill="#475569"/>
+  <path d="M480 120v80M486 252v80" stroke="#f8fafc" stroke-width="12" stroke-linecap="round" stroke-dasharray="34 28"/>
+  <path d="m438 230 40-22 30 35 42-22 36 52-74 34-46-42-46 28Z" fill="#111827"/>
+  <path d="M0 338c110-20 216-20 318 4 130 30 264 32 402 8 82-14 160-18 240-10v80H0Z" fill="#94a3b8" opacity=".35"/>
+  <g fill="#f97316" stroke="#9a3412" stroke-width="8" stroke-linejoin="round">
+    <path d="M168 300h84l-42-76Z"/>
+    <path d="M714 292h84l-42-76Z"/>
+  </g>
+  <g stroke="#f8fafc" stroke-width="12" stroke-linecap="round">
+    <path d="M188 300h44"/>
+    <path d="M734 292h44"/>
+  </g>
+</svg>

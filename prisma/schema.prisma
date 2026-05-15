@@ -1,0 +1,281 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PUBLIC
+  ADMIN
+}
+
+enum MissingStatus {
+  MISSING
+  FOUND
+}
+
+enum AlertType {
+  LANDSLIDE
+  FLOOD
+  FIRE
+  BUILDING_COLLAPSE
+  OTHER
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+  REJECTED
+  EXPIRED
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RoadAlertStatus {
+  ACTIVE
+  RESOLVED
+}
+
+enum CampStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum VolunteerSkill {
+  MEDICAL
+  TRANSPORT
+  RESCUE
+  FOOD
+  COMMUNICATION
+}
+
+enum VolunteerStatus {
+  AVAILABLE
+  DEPLOYED
+}
+
+enum DonationNeed {
+  CASH
+  FOOD
+  CLOTHES
+  MEDICINE
+  OTHER
+}
+
+enum FlagTarget {
+  ALERT
+  ROAD_ALERT
+  MISSING_PERSON
+}
+
+enum BroadcastSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(PUBLIC)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MissingPerson {
+  id               String        @id @default(cuid())
+  name             String
+  age              Int
+  idNumber         String?
+  lastSeenLocation String
+  lat              Float
+  lng              Float
+  photoUrl         String?
+  reporterName     String
+  reporterPhone    String
+  status           MissingStatus @default(MISSING)
+  flagCount        Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Alert {
+  id            String      @id @default(cuid())
+  type          AlertType
+  title         String
+  description   String
+  location      String
+  lat           Float
+  lng           Float
+  severity      Severity    @default(MEDIUM)
+  photoUrl      String?
+  reporterName  String
+  reporterPhone String
+  status        AlertStatus @default(ACTIVE)
+  flagCount     Int         @default(0)
+  expiresAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model RoadAlert {
+  id            String          @id @default(cuid())
+  fromLocation  String
+  toLocation    String
+  roadName      String
+  description   String
+  photoUrl      String?
+  reporterName  String
+  reporterPhone String
+  lat           Float
+  lng           Float
+  status        RoadAlertStatus @default(ACTIVE)
+  flagCount     Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ReliefCamp {
+  id               String        @id @default(cuid())
+  name             String
+  location         String
+  lat              Float
+  lng              Float
+  capacity         Int
+  currentOccupancy Int           @default(0)
+  qrCode           String        @unique
+  status           CampStatus    @default(ACTIVE)
+  checkIns         CampCheckIn[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model CampCheckIn {
+  id          String     @id @default(cuid())
+  camp        ReliefCamp @relation(fields: [campId], references: [id])
+  campId      String
+  personName  String
+  personId    String?
+  checkedInAt DateTime   @default(now())
+
+  @@index([campId])
+}
+
+model Volunteer {
+  id        String           @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  location  String
+  lat       Float
+  lng       Float
+  skills    VolunteerSkill[]
+  status    VolunteerStatus  @default(AVAILABLE)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model DonationDrive {
+  id               String           @id @default(cuid())
+  organizationName String
+  description      String
+  needs            DonationNeed[]
+  bankDetails      String?
+  externalLink     String?
+  isActive         Boolean          @default(true)
+  pledges          DonationPledge[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model DonationPledge {
+  id           String        @id @default(cuid())
+  drive        DonationDrive @relation(fields: [driveId], references: [id])
+  driveId      String
+  donorName    String
+  donorPhone   String
+  amount       Float?
+  donationType DonationNeed
+  message      String?
+  createdAt    DateTime      @default(now())
+
+  @@index([driveId])
+}
+
+model FlagReport {
+  id            String     @id @default(cuid())
+  targetType    FlagTarget
+  targetId      String
+  reason        String
+  reporterName  String
+  reporterPhone String
+  reviewed      Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+
+  @@index([targetId, targetType])
+  @@index([reviewed, createdAt])
+}
+
+model AdminLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  targetType String?
+  targetId   String?
+  note       String?
+  createdAt  DateTime @default(now())
+}
+
+model Broadcast {
+  id        String            @id @default(cuid())
+  message   String
+  severity  BroadcastSeverity @default(INFO)
+  isActive  Boolean           @default(true)
+  expiresAt DateTime?
+  createdAt DateTime          @default(now())
+}
+
+enum ChatSender {
+  PUBLIC
+  ADMIN
+}
+
+model ChatConversation {
+  id            String        @id @default(cuid())
+  publicId      String        @unique @default(cuid())
+  name          String
+  phone         String?
+  tokenHash     String
+  isOpen        Boolean       @default(true)
+  lastMessageAt DateTime?
+  adminLastReadAt DateTime?
+  messages      ChatMessage[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([lastMessageAt])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  sender         ChatSender
+  body           String
+  isUnsent       Boolean          @default(false)
+  unsentAt       DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+}

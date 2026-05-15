@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Strong wind coastal sample image">
+  <defs>
+    <linearGradient id="windSky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#dbeafe"/>
+      <stop offset="1" stop-color="#fef3c7"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="420" fill="url(#windSky)"/>
+  <path d="M0 300c124-34 218-30 330 4 126 38 236 34 356-4 102-32 186-30 274 2v118H0Z" fill="#93c5fd"/>
+  <path d="M0 346c90-24 188-20 312 8 184 42 340 26 648-12v78H0Z" fill="#2563eb" opacity=".75"/>
+  <g fill="none" stroke="#f59e0b" stroke-width="18" stroke-linecap="round">
+    <path d="M88 128h362c38 0 54-48 18-66-28-14-58 2-66 30"/>
+    <path d="M140 208h530c54 0 74-68 24-92-39-18-78 5-88 42"/>
+    <path d="M520 286h210c42 0 58-54 18-72-30-13-60 6-66 36"/>
+  </g>
+  <g stroke="#14532d" stroke-width="12" stroke-linecap="round">
+    <path d="M216 294c34-50 52-104 56-162"/>
+    <path d="M272 132c-52 20-90 22-132 8"/>
+    <path d="M272 132c-16 52-16 94 0 128"/>
+    <path d="M776 286c30-46 46-92 48-148"/>
+    <path d="M824 138c-48 18-86 18-124 4"/>
+    <path d="M824 138c-14 48-12 86 2 118"/>
+  </g>
+</svg>

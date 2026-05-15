@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Landslide slope sample image">
+  <defs>
+    <linearGradient id="lsSky" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#e0f2fe"/>
+      <stop offset="1" stop-color="#f8fafc"/>
+    </linearGradient>
+    <linearGradient id="slope" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#92400e"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="420" fill="url(#lsSky)"/>
+  <path d="M0 420V254c94-8 160-36 232-86 114-78 206-92 334-48 128 44 250 52 394 8v292Z" fill="#bbf7d0"/>
+  <path d="M0 420 420 76l540 344Z" fill="url(#slope)"/>
+  <path d="M420 76 218 420H0Z" fill="#78350f" opacity=".85"/>
+  <path d="M430 142c-34 52-54 100-77 164-18 49-50 83-92 114h266c62-68 92-144 68-228-14-49-69-74-165-50Z" fill="#fde68a" opacity=".76"/>
+  <g fill="#3f2a17">
+    <circle cx="500" cy="198" r="18"/>
+    <circle cx="548" cy="238" r="13"/>
+    <circle cx="462" cy="282" r="20"/>
+    <circle cx="612" cy="312" r="16"/>
+    <circle cx="404" cy="354" r="12"/>
+  </g>
+  <g stroke="#14532d" stroke-width="10" stroke-linecap="round">
+    <path d="M104 244v-70"/>
+    <path d="M104 174 74 210"/>
+    <path d="M104 174l32 38"/>
+    <path d="M794 174v-64"/>
+    <path d="M794 110l-28 34"/>
+    <path d="M794 110l34 36"/>
+  </g>
+  <path d="M0 354c170-20 296-12 410 24 140 44 322 46 550 2v40H0Z" fill="#f8fafc" opacity=".75"/>
+</svg>

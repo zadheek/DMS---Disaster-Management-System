@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Fire emergency sample image">
+  <rect width="960" height="420" fill="#f8fafc"/>
+  <path d="M0 248c150-38 268-34 410 2 146 38 306 38 550-10v180H0Z" fill="#fee2e2"/>
+  <g fill="#334155">
+    <rect x="92" y="152" width="230" height="168" rx="12"/>
+    <rect x="624" y="124" width="210" height="196" rx="12"/>
+  </g>
+  <g fill="#e2e8f0">
+    <rect x="122" y="182" width="42" height="38"/>
+    <rect x="190" y="182" width="42" height="38"/>
+    <rect x="258" y="182" width="42" height="38"/>
+    <rect x="654" y="154" width="42" height="38"/>
+    <rect x="724" y="154" width="42" height="38"/>
+    <rect x="654" y="220" width="42" height="38"/>
+    <rect x="724" y="220" width="42" height="38"/>
+  </g>
+  <path d="M450 324c-52-54-36-112 2-154 8 42 32 58 52 26 18-29 9-66-10-104 86 54 142 126 96 232Z" fill="#ef4444"/>
+  <path d="M498 324c-26-32-12-70 14-96 4 28 22 40 36 18 48 44 44 80 18 78Z" fill="#f97316"/>
+  <path d="M530 324c-12-18-6-38 8-54 18 18 26 36 14 54Z" fill="#fde047"/>
+</svg>
