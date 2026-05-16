@@ -20,8 +20,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: dev
     image: disaster-management-system-web
     restart: unless-stopped
+    command: npm run dev
     ports:
       - '3000:3000'
     volumes:
@@ -31,8 +33,62 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET must be set to a non-empty value}
       NEXT_PUBLIC_SOCKET_URL: ${NEXT_PUBLIC_SOCKET_URL:-http://localhost:3000}
-      NODE_ENV: production
+      NODE_ENV: development
+      HOSTNAME: 0.0.0.0
       PORT: 3000
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /app/app
+        - action: sync
+          path: ./components
+          target: /app/components
+        - action: sync
+          path: ./context
+          target: /app/context
+        - action: sync
+          path: ./hooks
+          target: /app/hooks
+        - action: sync
+          path: ./lib
+          target: /app/lib
+        - action: sync
+          path: ./prisma
+          target: /app/prisma
+        - action: sync
+          path: ./public
+          target: /app/public
+        - action: sync
+          path: ./schemas
+          target: /app/schemas
+        - action: sync
+          path: ./middleware.js
+          target: /app/middleware.js
+        - action: sync
+          path: ./server.js
+          target: /app/server.js
+        - action: sync
+          path: ./next.config.js
+          target: /app/next.config.js
+        - action: sync
+          path: ./tailwind.config.js
+          target: /app/tailwind.config.js
+        - action: sync
+          path: ./postcss.config.js
+          target: /app/postcss.config.js
+        - action: sync
+          path: ./jsconfig.json
+          target: /app/jsconfig.json
+        - action: sync
+          path: ./tsconfig.json
+          target: /app/tsconfig.json
+        - action: rebuild
+          path: ./package.json
+        - action: rebuild
+          path: ./package-lock.json
+        - action: rebuild
+          path: ./Dockerfile
     depends_on:
       db:
         condition: service_healthy
@@ -45,6 +101,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: dev
     image: disaster-management-system-web
     working_dir: /app
     depends_on:

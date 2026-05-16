@@ -24,15 +24,15 @@ export default function DataTable({
 }) {
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border border-slate-200 overflow-x-auto bg-white shadow-sm">
+      <div className="rounded-2xl border border-[var(--border)] overflow-x-auto bg-[var(--bg-surface)] shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow className="border-slate-200 bg-slate-50 hover:bg-slate-50">
+            <TableRow className="border-[var(--border)] bg-[var(--bg-elevated)] hover:bg-[var(--bg-elevated)]">
               {columns.map((col) => (
                 <TableHead
                   key={col.key}
                   scope="col"
-                  className="text-slate-500 font-semibold text-[11px] uppercase tracking-wide"
+                  className="text-[var(--subtitle-color)] font-semibold text-[11px] uppercase tracking-wide"
                 >
                   {col.label}
                 </TableHead>
@@ -42,19 +42,19 @@ export default function DataTable({
           <TableBody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i} className="border-slate-200">
+                <TableRow key={i} className="border-[var(--border)]">
                   {columns.map((col) => (
                     <TableCell key={col.key}>
-                      <Skeleton className="h-4 w-full bg-slate-100" />
+                      <Skeleton className="h-4 w-full bg-[var(--bg-elevated)]" />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : data.length === 0 ? (
-              <TableRow className="border-slate-200">
+              <TableRow className="border-[var(--border)]">
                 <TableCell
                   colSpan={columns.length}
-                  className="text-center text-slate-500 py-8"
+                  className="text-center text-[var(--subtitle-color)] py-8"
                 >
                   {emptyMessage}
                 </TableCell>
@@ -65,10 +65,10 @@ export default function DataTable({
                   key={row.id || i}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "border-slate-200 text-slate-900",
+                    "border-[var(--border)] text-[var(--title-color)]",
                     onRowClick
-                      ? "cursor-pointer hover:bg-blue-50/60"
-                      : "hover:bg-slate-50"
+                      ? "cursor-pointer hover:bg-[var(--accent)]/10"
+                      : "hover:bg-[var(--bg-elevated)]"
                   )}
                 >
                   {columns.map((col) => (

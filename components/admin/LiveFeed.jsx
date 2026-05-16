@@ -90,22 +90,22 @@ export default function LiveFeed() {
   useSocket("admin:newSubmission", handleAdminSubmission);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl flex flex-col h-80 shadow-sm">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200">
-        <Bell className="w-4 h-4 text-blue-600" />
+    <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl flex flex-col h-80 shadow-sm">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--border)]">
+        <Bell className="w-4 h-4 text-[var(--accent)]" />
         <div>
-          <h3 className="text-sm font-semibold text-slate-950">Live Feed</h3>
-          <p className="text-[11px] text-slate-500">Recent public submissions for admin review</p>
+          <h3 className="text-sm font-semibold text-[var(--title-color)]">Live Feed</h3>
+          <p className="text-[11px] text-[var(--subtitle-color)]">Recent public submissions for admin review</p>
         </div>
-        <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse ml-auto" />
+        <span className="w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse ml-auto" />
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full bg-slate-100" />
+            <Skeleton key={i} className="h-12 w-full bg-[var(--bg-elevated)]" />
           ))
         ) : items.length === 0 ? (
-          <p className="text-sm text-slate-500 text-center py-8">
+          <p className="text-sm text-[var(--subtitle-color)] text-center py-8">
             No recent submissions
           </p>
         ) : (
@@ -118,15 +118,15 @@ export default function LiveFeed() {
             return (
               <div
                 key={item.id}
-                className="bg-slate-50 rounded-xl px-3 py-2 text-xs border border-slate-200"
+                className="bg-[var(--bg-elevated)] rounded-xl px-3 py-2 text-xs border border-[var(--border)]"
               >
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <span className={cn("font-medium", config.color)}>{config.label}</span>
-                  <span className="text-slate-500">
+                  <span className="text-[var(--subtitle-color)]">
                     {formatDistanceToNow(item.timestamp, { addSuffix: true })}
                   </span>
                 </div>
-                <p className="text-slate-600 line-clamp-1">
+                <p className="text-[var(--text-primary)] line-clamp-1">
                   {item.data?.title || item.data?.name || item.data?.roadName || "New submission"}
                 </p>
               </div>
