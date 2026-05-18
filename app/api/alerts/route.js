@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { AlertSchema } from "@/schemas/alert.schema";
 
+function emptyToUndefined(value) {
+  return typeof value === "string" && value.trim() === "" ? undefined : value;
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -50,7 +54,11 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const parsed = AlertSchema.safeParse(body);
+    const parsed = AlertSchema.safeParse({
+      ...body,
+      photoUrl: emptyToUndefined(body.photoUrl),
+      expiresAt: emptyToUndefined(body.expiresAt),
+    });
     if (!parsed.success) {
       return Response.json(
         { success: false, error: parsed.error.errors[0].message },
@@ -60,7 +68,11 @@ export async function POST(request) {
 
     // All incoming data is validated with Zod before writing to the database.
     // This keeps map coordinates, severity, type, and reporter fields reliable.
-    let newAlert = await prisma.alert.create({ data: parsed.data });
+    const createData = {
+      ...parsed.data,
+      expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : undefined,
+    };
+    let newAlert = await prisma.alert.create({ data: createData });
 
     // Auto-escalation: if at least three same-type alerts appear within roughly
     // 500m during six hours, the newest alert becomes CRITICAL.

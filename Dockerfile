@@ -11,15 +11,17 @@ FROM base AS dev
 WORKDIR /app
 ENV NODE_ENV=development
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY prisma ./prisma
 RUN npx prisma generate
+COPY . .
 EXPOSE 3000
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+COPY prisma ./prisma
 RUN npx prisma generate
+COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

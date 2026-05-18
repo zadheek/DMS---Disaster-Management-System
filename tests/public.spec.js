@@ -6,7 +6,7 @@ test.describe("Public Map Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Page title in topbar
-    await expect(page.getByText("Live Map")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Live Map" })).toBeVisible();
 
     // Map container renders (Leaflet injects a div with class 'leaflet-container')
     await page.waitForSelector(".leaflet-container", { timeout: 15000 });
@@ -22,8 +22,17 @@ test.describe("Public Map Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Sidebar contains nav links
-    await expect(page.getByText("Missing Persons")).toBeVisible();
-    await expect(page.getByText("Threat Alerts")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Missing Persons" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Threat Alerts" })).toBeVisible();
+  });
+
+  test("active sidebar page label stays visible", async ({ page }) => {
+    await page.goto("/map", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Live Map" })).toBeVisible();
+
+    const activeMapLink = page.locator("aside").getByRole("link", { name: "Live Map" });
+    await expect(activeMapLink).toBeVisible();
+    await expect(activeMapLink.getByText("Live Map")).toBeVisible();
   });
 });
 
@@ -32,7 +41,7 @@ test.describe("Public Missing Persons Page", () => {
     await page.goto("/missing");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText("Missing Persons")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Missing Persons" })).toBeVisible();
     await expect(page.getByRole("button", { name: /report missing person/i })).toBeVisible();
   });
 
@@ -69,10 +78,10 @@ test.describe("Public Missing Persons Page", () => {
     await expect(page.getByRole("dialog")).toBeVisible();
 
     // Fill required fields
-    await page.getByPlaceholder(/full name/i).fill("Test Person E2E");
+    await page.getByPlaceholder(/full name/i).fill("Sahan Madusanka");
     await page.getByPlaceholder(/age/i).fill("30");
     await page.getByPlaceholder(/last seen location/i).fill("Colombo Fort, Western Province");
-    await page.getByPlaceholder(/your name/i).fill("Test Reporter");
+    await page.getByPlaceholder(/your name/i).fill("Nadeeka Fernando");
     await page.getByPlaceholder(/phone/i).fill("+94711234567");
 
     await page.getByRole("button", { name: /^submit$/i }).click();
@@ -87,7 +96,7 @@ test.describe("Public Alerts Page", () => {
     await page.goto("/alerts");
     await page.waitForLoadState("networkidle");
 
-    await expect(page.getByText("Threat Alerts")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Threat Alerts" })).toBeVisible();
     await expect(page.getByRole("button", { name: /report alert/i })).toBeVisible();
 
     // Seeded alert from seed.js should be visible
@@ -104,18 +113,22 @@ test.describe("Public Alerts Page", () => {
   });
 
   test("opens report alert modal and submits", async ({ page }) => {
-    await page.goto("/alerts");
-    await page.waitForLoadState("networkidle");
+    const alertsLoaded = page.waitForResponse(
+      (response) => response.url().includes("/api/alerts") && response.status() === 200
+    );
+    await page.goto("/alerts", { waitUntil: "domcontentloaded" });
+    await alertsLoaded;
+    await expect(page.getByRole("button", { name: /report alert/i })).toBeVisible();
 
     await page.getByRole("button", { name: /report alert/i }).click();
     await expect(page.getByRole("dialog")).toBeVisible();
     await expect(page.getByText("Report Threat Alert")).toBeVisible();
 
     // Fill title (type and severity have defaults)
-    await page.getByPlaceholder(/brief description of the alert/i).fill("E2E Test Alert Flood");
-    await page.getByPlaceholder(/full description/i).fill("Test description for E2E test flood alert in test area.");
-    await page.getByPlaceholder(/location name/i).fill("Test Location, Colombo");
-    await page.getByPlaceholder(/your name/i).fill("E2E Reporter");
+    await page.getByPlaceholder(/brief description of the alert/i).fill("Kelani River Flood Warning");
+    await page.getByPlaceholder(/full description/i).fill("Water level is rising near the Kelani River bund and low-lying homes need monitoring.");
+    await page.getByPlaceholder(/location name/i).fill("Sedawatta, Colombo");
+    await page.getByPlaceholder(/your name/i).fill("Anjali Perera");
     await page.getByPlaceholder(/phone/i).fill("+94712345678");
 
     await page.getByRole("button", { name: /^submit$/i }).click();
@@ -124,25 +137,62 @@ test.describe("Public Alerts Page", () => {
   });
 });
 
+test.describe("Public Road Alerts Page", () => {
+  test("opens report road alert modal and submits", async ({ page }) => {
+    const roadsLoaded = page.waitForResponse(
+      (response) => response.url().includes("/api/roads") && response.status() === 200
+    );
+    await page.goto("/roads", { waitUntil: "domcontentloaded" });
+    await roadsLoaded;
+    await expect(page.getByRole("button", { name: /report road alert/i })).toBeVisible();
+
+    await page.getByRole("button", { name: /report road alert/i }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+
+    await page.getByPlaceholder("Colombo").fill("Colombo");
+    await page.getByPlaceholder("Kandy", { exact: true }).fill("Kandy");
+    await page.getByPlaceholder("A1 Kandy Road").fill("A1 Kandy Road");
+    await page
+      .getByPlaceholder(/describe the blockage/i)
+      .fill("One lane is blocked by flood water near the bridge and buses are moving slowly.");
+    await page.getByPlaceholder(/your name/i).fill("Mohamed Rizwan");
+    await page.getByPlaceholder(/\+94 77 123 4567/i).fill("+94771234567");
+
+    await page.getByRole("button", { name: /^submit$/i }).click();
+
+    await expect(page.getByText(/road alert reported successfully/i)).toBeVisible({ timeout: 10000 });
+  });
+});
+
 test.describe("Camp Check-In Page", () => {
   test("loads check-in page with tabs", async ({ page }) => {
-    await page.goto("/checkin");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/checkin", { waitUntil: "domcontentloaded" });
 
-    await expect(page.getByText("Camp Check-In")).toBeVisible();
-    // Should show scan or manual tab
-    await expect(
-      page.getByRole("tab", { name: /scan/i }).or(page.getByRole("tab", { name: /manual/i }))
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Camp Check-In" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /qr reader/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /manual/i })).toBeVisible();
+  });
+
+  test("manual check-in has camp location, name, and ID fields", async ({ page }) => {
+    const campsLoaded = page.waitForResponse(
+      (response) => response.url().includes("/api/camps?status=ACTIVE") && response.status() === 200
+    );
+    await page.goto("/checkin", { waitUntil: "domcontentloaded" });
+    await campsLoaded;
+    await page.getByRole("tab", { name: /manual/i }).click();
+
+    await expect(page.getByLabel(/camp location/i)).toBeVisible();
+    await expect(page.getByLabel(/^name$/i)).toBeVisible();
+    await expect(page.getByLabel(/id number/i)).toBeVisible();
   });
 
   test("QR param switches to manual tab and attempts camp lookup", async ({ page }) => {
     // Use a known invalid QR code — should trigger "Camp not found" toast
-    await page.goto("/checkin?camp=nonexistent-qr-code-e2e");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/checkin?camp=nonexistent-qr-code-e2e", { waitUntil: "domcontentloaded" });
+    await expect(page.getByRole("heading", { name: "Camp Check-In" })).toBeVisible();
 
-    // Should be on manual tab when camp param is in URL
-    await expect(page.getByRole("tab", { name: /manual/i })).toBeVisible();
+    // Should keep the QR reader active when a scanned/passed QR code is in the URL
+    await expect(page.getByRole("tab", { name: /qr reader/i })).toHaveAttribute("data-state", "active");
 
     // With an invalid QR, should show error toast
     await expect(page.getByText(/camp not found/i)).toBeVisible({ timeout: 10000 });

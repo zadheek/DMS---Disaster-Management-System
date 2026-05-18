@@ -22,24 +22,30 @@ const ImageUrlSchema = z
     "Image must be an uploaded file or valid URL"
   );
 
+const coordinateSchema = (axis, bounds) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return value;
+      const trimmed = value.trim();
+      return trimmed === "" ? NaN : Number(trimmed);
+    },
+    z
+      .number({ invalid_type_error: `${axis} is required` })
+      .finite(`${axis} must be a valid number`)
+      .min(bounds.min, `${axis} must be within Sri Lanka bounds`)
+      .max(bounds.max, `${axis} must be within Sri Lanka bounds`)
+  );
+
 export const RoadAlertSchema = z.object({
-  fromLocation: z.string().min(1, "From location is required").max(200),
-  toLocation: z.string().min(1, "To location is required").max(200),
-  roadName: z.string().min(1, "Road name is required").max(200),
-  description: z.string().min(1, "Description is required").max(1000),
+  fromLocation: z.string().trim().min(1, "From location is required").max(200),
+  toLocation: z.string().trim().min(1, "To location is required").max(200),
+  roadName: z.string().trim().min(1, "Road name is required").max(200),
+  description: z.string().trim().min(1, "Description is required").max(1000),
   photoUrl: ImageUrlSchema.optional(),
-  reporterName: z.string().min(1, "Your name is required").max(100),
-  reporterPhone: z.string().min(7, "Valid phone required").max(20),
-  lat: z
-    .number()
-    .finite()
-    .min(SRI_LANKA_BOUNDS.lat.min, "Latitude must be within Sri Lanka bounds")
-    .max(SRI_LANKA_BOUNDS.lat.max, "Latitude must be within Sri Lanka bounds"),
-  lng: z
-    .number()
-    .finite()
-    .min(SRI_LANKA_BOUNDS.lng.min, "Longitude must be within Sri Lanka bounds")
-    .max(SRI_LANKA_BOUNDS.lng.max, "Longitude must be within Sri Lanka bounds"),
+  reporterName: z.string().trim().min(1, "Your name is required").max(100),
+  reporterPhone: z.string().trim().min(7, "Valid phone required").max(20),
+  lat: coordinateSchema("Latitude", SRI_LANKA_BOUNDS.lat),
+  lng: coordinateSchema("Longitude", SRI_LANKA_BOUNDS.lng),
 });
 
 export const RoadAlertUpdateSchema = RoadAlertSchema.partial().extend({

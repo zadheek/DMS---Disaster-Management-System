@@ -36,6 +36,10 @@ services:
       NODE_ENV: development
       HOSTNAME: 0.0.0.0
       PORT: 3000
+      # Required on macOS — Docker can't receive native filesystem events from the host,
+      # so Next.js and Chokidar must poll for file changes instead.
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
     develop:
       watch:
         - action: sync

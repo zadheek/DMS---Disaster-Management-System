@@ -71,6 +71,7 @@ const ActionsCell = ({ row, onApprove, onResolve, onReject, onDelete, onEdit, ac
     <Button
       size="sm"
       variant="ghost"
+      aria-label={`Edit ${row.title}`}
       className="h-7 px-2 text-xs text-[var(--info)] hover:text-[var(--info)] hover:bg-[var(--info)]/10"
       disabled={actionLoading === row.id}
       onClick={() => onEdit(row)}
@@ -80,6 +81,7 @@ const ActionsCell = ({ row, onApprove, onResolve, onReject, onDelete, onEdit, ac
     <Button
       size="sm"
       variant="ghost"
+      aria-label={`Delete ${row.title}`}
       className="h-7 px-2 text-xs text-[var(--critical)] hover:text-[var(--critical)] hover:bg-[var(--critical)]/10"
       disabled={actionLoading === row.id}
       onClick={() => onDelete(row)}
@@ -434,4 +436,3 @@ export default function AdminAlertsPage() {
     </div>
   );
 }
-

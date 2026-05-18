@@ -22,25 +22,31 @@ const ImageUrlSchema = z
     "Image must be an uploaded file or valid URL"
   );
 
+const coordinateSchema = (axis, bounds) =>
+  z.preprocess(
+    (value) => {
+      if (typeof value !== "string") return value;
+      const trimmed = value.trim();
+      return trimmed === "" ? NaN : Number(trimmed);
+    },
+    z
+      .number({ invalid_type_error: `${axis} is required` })
+      .finite(`${axis} must be a valid number`)
+      .min(bounds.min, `${axis} must be within Sri Lanka bounds`)
+      .max(bounds.max, `${axis} must be within Sri Lanka bounds`)
+  );
+
 export const AlertSchema = z.object({
   type: z.enum(["LANDSLIDE", "FLOOD", "FIRE", "BUILDING_COLLAPSE", "OTHER"]),
-  title: z.string().min(1, "Title is required").max(200),
-  description: z.string().min(1, "Description is required").max(1000),
-  location: z.string().min(1, "Location is required").max(200),
-  lat: z
-    .number()
-    .finite()
-    .min(SRI_LANKA_BOUNDS.lat.min, "Latitude must be within Sri Lanka bounds")
-    .max(SRI_LANKA_BOUNDS.lat.max, "Latitude must be within Sri Lanka bounds"),
-  lng: z
-    .number()
-    .finite()
-    .min(SRI_LANKA_BOUNDS.lng.min, "Longitude must be within Sri Lanka bounds")
-    .max(SRI_LANKA_BOUNDS.lng.max, "Longitude must be within Sri Lanka bounds"),
+  title: z.string().trim().min(1, "Title is required").max(200),
+  description: z.string().trim().min(1, "Description is required").max(1000),
+  location: z.string().trim().min(1, "Location is required").max(200),
+  lat: coordinateSchema("Latitude", SRI_LANKA_BOUNDS.lat),
+  lng: coordinateSchema("Longitude", SRI_LANKA_BOUNDS.lng),
   severity: z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]).default("MEDIUM"),
   photoUrl: ImageUrlSchema.optional(),
-  reporterName: z.string().min(1, "Your name is required").max(100),
-  reporterPhone: z.string().min(7, "Valid phone required").max(20),
+  reporterName: z.string().trim().min(1, "Your name is required").max(100),
+  reporterPhone: z.string().trim().min(7, "Valid phone required").max(20),
   expiresAt: z.string().datetime().optional(),
 });
 

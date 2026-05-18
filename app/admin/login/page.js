@@ -73,8 +73,9 @@ function LoginContent() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <Label className="text-[var(--text-muted)] text-xs font-semibold uppercase tracking-wider">Email</Label>
+              <Label htmlFor="email" className="text-[var(--text-muted)] text-xs font-semibold uppercase tracking-wider">Email</Label>
               <Input
+                id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -86,9 +87,10 @@ function LoginContent() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[var(--text-muted)] text-xs font-semibold uppercase tracking-wider">Password</Label>
+              <Label htmlFor="password" className="text-[var(--text-muted)] text-xs font-semibold uppercase tracking-wider">Password</Label>
               <div className="relative flex items-center">
                 <Input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -147,4 +149,3 @@ export default function AdminLoginPage() {
     </Suspense>
   );
 }
-

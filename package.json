@@ -6,6 +6,7 @@
     "dev": "node server.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
+    "docker:watch": "docker compose up --build --watch",
     "lint": "next lint",
     "db:seed": "node prisma/seed.js",
     "db:migrate": "npx prisma migrate dev",

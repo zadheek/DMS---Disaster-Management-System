@@ -93,9 +93,22 @@ export default function LeafletMap({
 }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const LRef = useRef(null); // cached Leaflet import — avoids re-importing on every filter change
   const markersRef = useRef([]);
   const markerByKeyRef = useRef(new Map());
   const userMarkerRef = useRef(null);
+  const pinsRef = useRef(pins);
+  const focusPendingRef = useRef(null); // stores focusTarget when map isn't ready yet
+
+  useEffect(() => {
+    pinsRef.current = pins;
+  }, [pins]);
+
+  const clearPins = () => {
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
+    markerByKeyRef.current.clear();
+  };
 
   // Leaflet must be imported in the browser only. The map instance is kept in a
   // ref so React rerenders do not recreate the map canvas.
@@ -105,8 +118,16 @@ export default function LeafletMap({
 
     const initMap = async () => {
       const L = (await import("leaflet")).default;
+      LRef.current = L; // cache so filter changes don't re-import
 
       if (!isMounted || mapInstanceRef.current || !mapRef.current) return;
+
+      // React Strict Mode mounts twice; Leaflet's remove() doesn't clear
+      // _leaflet_id from the DOM node, so delete it before re-initializing
+      // to avoid "Map container is already initialized" errors.
+      if (mapRef.current._leaflet_id) {
+        delete mapRef.current._leaflet_id;
+      }
 
       const map = L.map(mapRef.current, {
         center: SRI_LANKA_CENTER,
@@ -119,13 +140,36 @@ export default function LeafletMap({
         maxBoundsViscosity: 1.0,
       });
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        maxZoom: 19,
-        updateWhenIdle: true,
-        keepBuffer: 2,
-        detectRetina: false,
-      }).addTo(map);
+      const localGrid = L.gridLayer({ attribution: "Local fallback map", tileSize: 256 });
+
+      localGrid.createTile = () => {
+        const tile = L.DomUtil.create("div", "dms-map-tile");
+        tile.style.width = "256px";
+        tile.style.height = "256px";
+        tile.style.backgroundColor = "#eef6fb";
+        tile.style.backgroundImage =
+          "linear-gradient(90deg, rgba(59,130,246,0.08) 1px, transparent 1px), linear-gradient(rgba(59,130,246,0.08) 1px, transparent 1px)";
+        tile.style.backgroundSize = "64px 64px";
+        tile.style.border = "1px solid rgba(148,163,184,0.18)";
+        return tile;
+      };
+
+      const streetTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18,
+        crossOrigin: true,
+      });
+
+      let tileErrors = 0;
+      streetTiles.on("tileerror", () => {
+        tileErrors += 1;
+        if (tileErrors === 3 && !map.hasLayer(localGrid)) {
+          map.removeLayer(streetTiles);
+          localGrid.addTo(map);
+        }
+      });
+
+      streetTiles.addTo(map);
 
       // Fit to Sri Lanka on load
       map.fitBounds(SRI_LANKA_BOUNDS);
@@ -136,7 +180,15 @@ export default function LeafletMap({
       }
 
       mapInstanceRef.current = map;
-      renderPins(L, map, pins);
+      map.invalidateSize();
+      renderPins(L, map, pinsRef.current);
+
+      // Apply any focus that was requested before the async init completed
+      if (focusPendingRef.current) {
+        const pending = focusPendingRef.current;
+        focusPendingRef.current = null;
+        setTimeout(() => focusMapTarget(pending), 350);
+      }
     };
 
     initMap();
@@ -151,27 +203,29 @@ export default function LeafletMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Rebuild markers whenever filtered pins change. Marker objects are tracked
-  // separately from React because Leaflet owns DOM nodes outside React.
+  // Rebuild markers whenever filtered pins change.
+  // Uses the cached LRef so this is synchronous — no async gap means no
+  // visual flash or accidental map pan between clearPins and renderPins.
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
-
-    const updateMarkers = async () => {
-      const L = (await import("leaflet")).default;
-      markersRef.current.forEach((m) => m.remove());
-      markersRef.current = [];
-      markerByKeyRef.current.clear();
-      renderPins(L, mapInstanceRef.current, pins);
-    };
-
-    updateMarkers();
-  }, [pins]);
+    const map = mapInstanceRef.current;
+    const L = LRef.current;
+    if (!map || !L) return; // map not ready yet — init effect will call renderPins
+    clearPins();
+    renderPins(L, map, pins);
+  }, [pins]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!focusSignal || !focusTarget || !mapInstanceRef.current) return;
+    if (!focusSignal || !focusTarget) return;
+    if (!mapInstanceRef.current) {
+      // Map not initialised yet (async) — store for after init
+      focusPendingRef.current = focusTarget;
+      return;
+    }
     focusMapTarget(focusTarget);
+    // pins intentionally excluded: focusTarget should only fire on signal change,
+    // NOT on every filter toggle (that caused the "slides to sea" bug).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusSignal, focusTarget, pins]);
+  }, [focusSignal, focusTarget]);
 
   useEffect(() => {
     if (!fitSignal || !mapInstanceRef.current) return;
@@ -185,7 +239,7 @@ export default function LeafletMap({
     navigator.geolocation?.getCurrentPosition(
       async ({ coords }) => {
         const latLng = [coords.latitude, coords.longitude];
-        const L = (await import("leaflet")).default;
+        const L = LRef.current || (await import("leaflet")).default;
         if (userMarkerRef.current) userMarkerRef.current.remove();
         userMarkerRef.current = L.circleMarker(latLng, {
           radius: 8,
@@ -307,16 +361,15 @@ export default function LeafletMap({
       }
     });
 
-    if (focusTarget) {
-      setTimeout(() => focusMapTarget(focusTarget), 100);
-    }
+    // focusTarget is handled by the dedicated focusSignal useEffect above.
+    // Do NOT call focusMapTarget here — it would re-pan on every filter change.
   }
 
   return (
     <div
       ref={mapRef}
-      style={{ height, width: "100%" }}
-      className="z-0"
+      style={{ height, minHeight: "480px", width: "100%" }}
+      className="leaflet-container z-0"
     />
   );
 }

@@ -69,7 +69,10 @@ export default function DonationCard({ donation, onDonate, index = 0 }) {
               <p className="text-[var(--text-primary)]"><span className="text-[var(--text-muted)]">Bank Name:</span> {bank.bankName}</p>
             )}
             {bank.accountName && (
-              <p className="text-[var(--text-primary)]"><span className="text-[var(--text-muted)]">Account Name:</span> {bank.accountName}</p>
+              <p className="text-[var(--text-primary)]">
+                <span className="text-[var(--text-muted)]">Account Name:</span>{" "}
+                {bank.accountName === donation.organizationName ? "Listed organization" : bank.accountName}
+              </p>
             )}
             {bank.accountNumber && (
               <p className="text-[var(--text-primary)]"><span className="text-[var(--text-muted)]">Account Number:</span> {bank.accountNumber}</p>

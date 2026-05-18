@@ -295,10 +295,10 @@ export default function AdminOverviewPage() {
           <section className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl p-4 shadow-[0_4px_14px_rgba(20,52,102,0.04)]">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {[
-                { href: "/admin/alerts", label: "Review alerts" },
+                { href: "/admin/alerts", label: "Review submissions" },
                 { href: "/admin/camps", label: "Manage camps" },
                 { href: "/admin/volunteers", label: "Assign volunteers" },
-                { href: "/admin/broadcast", label: "Send broadcast" },
+                { href: "/admin/broadcast", label: "Publish message" },
               ].map((item) => (
                 <Link
                   key={item.href}
@@ -410,4 +410,3 @@ export default function AdminOverviewPage() {
     </div>
   );
 }
-

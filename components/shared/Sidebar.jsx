@@ -76,7 +76,7 @@ export default function Sidebar({ adminMode = false }) {
   const [openGroups, setOpenGroups] = useState({
     incidents: true,
     operations: false,
-    communications: false,
+    communications: true,
   });
   const pathname = usePathname();
 
@@ -147,8 +147,7 @@ export default function Sidebar({ adminMode = false }) {
             <ShieldAlert className="w-5 h-5 text-white" />
           </div>
           {!collapsed && (
-            <div className="flex flex-col overflow-hidden">
-              <span className="font-bold text-sm text-slate-900 leading-tight tracking-tight">DMS</span>
+            <div className="flex flex-col overflow-hidden">              {/* ↓ Change "DMS" and "Disaster Management" to rename the brand */}              <span className="font-bold text-sm text-slate-900 leading-tight tracking-tight">DMS</span>
               <span className="text-[10px] text-slate-500 truncate leading-tight uppercase tracking-wider font-medium">Disaster Management</span>
             </div>
           )}
@@ -169,22 +168,27 @@ export default function Sidebar({ adminMode = false }) {
                     href={item.href}
                     aria-label={item.label}
                     className={cn(
-                      "group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 relative",
+                      "group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
                       collapsed ? "justify-center" : "",
                       isActive
-                        ? "text-blue-700 bg-blue-50"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-blue-700"
                     )}
                     title={collapsed ? item.label : undefined}
                   >
+                    {/* Blue left-edge active indicator bar */}
                     {isActive && !collapsed && (
                       <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-600" />
                     )}
                     <Icon className={cn(
                       "w-5 h-5 shrink-0 transition-colors duration-150",
-                      isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
+                      isActive ? "text-blue-600" : "text-slate-400 group-hover:text-blue-600"
                     )} />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    {!collapsed && (
+                      <span className={cn("truncate", isActive ? "text-blue-700" : "text-slate-600 group-hover:text-blue-700")}>
+                        {item.label}
+                      </span>
+                    )}
                   </Link>
                 </li>
               );
@@ -208,19 +212,25 @@ export default function Sidebar({ adminMode = false }) {
                       href={group.href}
                       aria-label={group.label}
                       className={cn(
-                          "group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 relative",
+                        "group relative flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
                         collapsed ? "justify-center" : "",
                         groupActive
-                            ? "text-blue-700 bg-blue-50"
-                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                          ? "bg-blue-100 text-blue-700"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-blue-700"
                       )}
                       title={collapsed ? group.label : undefined}
                     >
                       {groupActive && !collapsed && (
                         <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-600" />
                       )}
-                      <Icon className={cn("w-5 h-5 shrink-0", groupActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
-                      {!collapsed && <span>{group.label}</span>}
+                      <Icon
+                        className={cn("w-5 h-5 shrink-0", groupActive ? "text-blue-600" : "text-slate-400 group-hover:text-blue-600")}
+                      />
+                      {!collapsed && (
+                        <span className={cn(groupActive ? "text-blue-700" : "text-slate-600 group-hover:text-blue-700")}>
+                          {group.label}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
@@ -232,21 +242,27 @@ export default function Sidebar({ adminMode = false }) {
                     type="button"
                     onClick={() => !collapsed && toggleGroup(group.id)}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150 relative",
+                      "relative flex w-full items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
                       collapsed ? "justify-center" : "",
                       groupActive
-                        ? "text-blue-700 bg-blue-50"
-                        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                        ? "bg-blue-100 text-blue-700"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-blue-700"
                     )}
                     title={collapsed ? group.label : undefined}
                   >
                     {groupActive && !collapsed && (
                       <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-blue-600" />
                     )}
-                    <Icon className={cn("w-5 h-5 shrink-0", groupActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} />
+                    <Icon
+                      className={cn("w-5 h-5 shrink-0", groupActive ? "text-blue-600" : "text-slate-400 group-hover:text-blue-600")}
+                    />
                     {!collapsed && (
                       <>
-                        <span className="min-w-0 flex-1 truncate text-left">{group.label}</span>
+                        <span
+                          className={cn("min-w-0 flex-1 truncate text-left", groupActive ? "text-blue-700" : "text-slate-600 group-hover:text-blue-700")}
+                        >
+                          {group.label}
+                        </span>
                         {group.id === "communications" && adminUnreadMessages > 0 && (
                           <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm">
                             {adminUnreadMessages > 99 ? "99+" : adminUnreadMessages}
@@ -269,12 +285,18 @@ export default function Sidebar({ adminMode = false }) {
                               className={cn(
                                 "group flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-colors duration-150",
                                 itemActive
-                                  ? "text-blue-700 bg-blue-50"
-                                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "text-slate-600 hover:bg-slate-50 hover:text-blue-700"
                               )}
                             >
-                              <ItemIcon className="w-3.5 h-3.5 shrink-0" />
-                              <span className="truncate">{item.label}</span>
+                              <ItemIcon
+                                className={cn("w-3.5 h-3.5 shrink-0", itemActive ? "text-blue-600" : "text-slate-400 group-hover:text-blue-600")}
+                              />
+                              <span
+                                className={cn("truncate", itemActive ? "text-blue-700" : "text-slate-600 group-hover:text-blue-700")}
+                              >
+                                {item.label}
+                              </span>
                               {item.href === "/admin/chat" && adminUnreadMessages > 0 && (
                                 <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm">
                                   {adminUnreadMessages > 99 ? "99+" : adminUnreadMessages}
@@ -388,8 +410,8 @@ export default function Sidebar({ adminMode = false }) {
                             : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
+                    <Icon className="w-4 h-4" style={isActive ? { color: "#2563eb" } : undefined} />
+                    <span className={isActive ? "text-blue-700" : "text-slate-600"} style={isActive ? { color: "#1d4ed8" } : undefined}>{item.label}</span>
                   </Link>
                 );
               })}
@@ -412,8 +434,13 @@ export default function Sidebar({ adminMode = false }) {
                           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                       )}
                     >
-                      <group.icon className="w-4 h-4" />
-                      <span>{group.label}</span>
+                      <group.icon className="w-4 h-4" style={isAdminItemActive(pathname, group.href) ? { color: "#2563eb" } : undefined} />
+                      <span
+                        className={isAdminItemActive(pathname, group.href) ? "text-blue-700" : "text-slate-600"}
+                        style={isAdminItemActive(pathname, group.href) ? { color: "#1d4ed8" } : undefined}
+                      >
+                        {group.label}
+                      </span>
                     </Link>
                   ) : (
                     <div className="space-y-1">
@@ -429,8 +456,13 @@ export default function Sidebar({ adminMode = false }) {
                               : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                           )}
                         >
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.label}</span>
+                          <item.icon className="w-4 h-4" style={isAdminItemActive(pathname, item.href) ? { color: "#2563eb" } : undefined} />
+                          <span
+                            className={isAdminItemActive(pathname, item.href) ? "text-blue-700" : "text-slate-600"}
+                            style={isAdminItemActive(pathname, item.href) ? { color: "#1d4ed8" } : undefined}
+                          >
+                            {item.label}
+                          </span>
                           {item.href === "/admin/chat" && adminUnreadMessages > 0 && (
                             <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white shadow-sm">
                               {adminUnreadMessages > 99 ? "99+" : adminUnreadMessages}

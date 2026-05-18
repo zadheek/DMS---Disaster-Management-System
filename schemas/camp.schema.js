@@ -27,8 +27,11 @@ export const CampUpdateSchema = ReliefCampSchema.partial().extend({
 });
 
 export const CheckInSchema = z.object({
-  personName: z.string().min(1, "Name is required").max(100),
-  personId: z.string().max(20).optional(),
+  personName: z.string().trim().min(1, "Name is required").max(100),
+  personId: z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().trim().max(20).optional()
+  ),
 });
 
 export const CampCheckInSearchSchema = z.object({

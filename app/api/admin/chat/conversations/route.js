@@ -178,6 +178,13 @@ export async function POST(request) {
         body: msgParsed.data.message,
         createdAt: chatMessage.createdAt,
       });
+      global.io.emit("chat:newMessage", {
+        conversationId,
+        id: chatMessage.id,
+        sender: "ADMIN",
+        body: msgParsed.data.message,
+        createdAt: chatMessage.createdAt,
+      });
     }
 
     return Response.json(

@@ -3,17 +3,30 @@ import { useState, useEffect, useCallback } from "react";
 import { formatDistanceToNow } from "@/lib/time";
 import { toast } from "sonner";
 import axios from "axios";
-import { CheckCircle, Trash2, Search, User, Edit2 } from "lucide-react";
+import { CheckCircle, Trash2, Search, User, Edit2, Plus } from "lucide-react";
 import Sidebar from "@/components/shared/Sidebar";
 import TopBar from "@/components/shared/TopBar";
 import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/shared/StatusBadge";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import ImageUpload from "@/components/shared/ImageUpload";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+
+const DEFAULT_ADD_FORM = {
+  name: "",
+  age: "",
+  idNumber: "",
+  lastSeenLocation: "",
+  reporterName: "",
+  reporterPhone: "",
+  photoUrl: "",
+  lat: 6.9271,
+  lng: 79.8612,
+};
 
 const TABS = ["MISSING", "FOUND", "FLAGGED"];
 
@@ -65,6 +78,7 @@ const ActionsCell = ({ row, onMarkFound, onDelete, onEdit, actionLoading }) => (
     <Button
       size="sm"
       variant="ghost"
+      aria-label={`Edit ${row.name}`}
       className="h-7 px-2 text-xs text-[var(--info)] hover:text-[var(--info)] hover:bg-[var(--info)]/10"
       disabled={actionLoading === row.id}
       onClick={() => onEdit(row)}
@@ -74,6 +88,7 @@ const ActionsCell = ({ row, onMarkFound, onDelete, onEdit, actionLoading }) => (
     <Button
       size="sm"
       variant="ghost"
+      aria-label={`Delete ${row.name}`}
       className="h-7 px-2 text-xs text-[var(--critical)] hover:text-[var(--critical)] hover:bg-[var(--critical)]/10"
       disabled={actionLoading === row.id}
       onClick={() => onDelete(row)}
@@ -94,6 +109,9 @@ export default function AdminMissingPage() {
   const [actionLoading, setActionLoading] = useState(null);
   const [editTarget, setEditTarget] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [addOpen, setAddOpen] = useState(false);
+  const [addForm, setAddForm] = useState(DEFAULT_ADD_FORM);
+  const [addSubmitting, setAddSubmitting] = useState(false);
 
   const fetchMissing = useCallback(
     async (tab = activeTab, p = page) => {
@@ -136,8 +154,35 @@ export default function AdminMissingPage() {
       age: row.age,
       idNumber: row.idNumber || "",
       lastSeenLocation: row.lastSeenLocation,
+      photoUrl: row.photoUrl || "",
       status: row.status,
     });
+  };
+
+  const handleAddSave = async () => {
+    if (!addForm.name.trim()) return toast.error("Name is required");
+    if (!addForm.lastSeenLocation.trim()) return toast.error("Last seen location is required");
+    if (!addForm.reporterName.trim()) return toast.error("Reporter name is required");
+    if (!addForm.reporterPhone.trim()) return toast.error("Reporter phone is required");
+    setAddSubmitting(true);
+    try {
+      const { data } = await axios.post("/api/missing", {
+        ...addForm,
+        age: parseInt(addForm.age, 10) || 0,
+        lat: Number(addForm.lat) || 6.9271,
+        lng: Number(addForm.lng) || 79.8612,
+      });
+      if (data.success) {
+        toast.success("Missing person report created");
+        setAddOpen(false);
+        setAddForm(DEFAULT_ADD_FORM);
+        fetchMissing();
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.error || "Failed to create report");
+    } finally {
+      setAddSubmitting(false);
+    }
   };
 
   const handleEditSave = async () => {
@@ -260,7 +305,15 @@ export default function AdminMissingPage() {
     <div className="flex min-h-[100dvh] bg-slate-50 overflow-hidden">
       <Sidebar adminMode />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <TopBar title="Missing Persons Management" />
+        <TopBar title="Missing Persons Management">
+          <Button
+            className="gap-2 bg-blue-600 text-white hover:bg-blue-700"
+            onClick={() => { setAddForm(DEFAULT_ADD_FORM); setAddOpen(true); }}
+          >
+            <Plus className="w-4 h-4" />
+            New Report
+          </Button>
+        </TopBar>
         <main className="flex-1 overflow-y-auto p-5 space-y-4 motion-fade-up">
           <div className="flex items-center gap-3">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1">
@@ -313,7 +366,7 @@ export default function AdminMissingPage() {
 
       {editTarget && (
         <Dialog open={!!editTarget} onOpenChange={(open) => !open && setEditTarget(null)}>
-          <DialogContent className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border)] max-w-md">
+          <DialogContent className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border)] max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Missing Person</DialogTitle>
             </DialogHeader>
@@ -362,6 +415,17 @@ export default function AdminMissingPage() {
                   <option value="FOUND">FOUND</option>
                 </select>
               </div>
+              <div className="space-y-2">
+                <Label>Person Image</Label>
+                <ImageUpload
+                  currentUrl={editForm.photoUrl || null}
+                  label="Upload person image"
+                  onUpload={(url) => setEditForm((prev) => ({ ...prev, photoUrl: url || "" }))}
+                />
+                <p className="text-xs text-[var(--text-muted)]">
+                  Remove the existing image or upload a clearer replacement when needed.
+                </p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setEditTarget(null)}>Cancel</Button>
@@ -370,7 +434,91 @@ export default function AdminMissingPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Add New Missing Person Dialog */}
+      <Dialog open={addOpen} onOpenChange={(open) => { if (!open) setAddForm(DEFAULT_ADD_FORM); setAddOpen(open); }}>
+        <DialogContent className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border)] max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>New Missing Person Report</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Person Photo</Label>
+              <ImageUpload
+                currentUrl={addForm.photoUrl || null}
+                label="Upload person photo"
+                onUpload={(url) => setAddForm((prev) => ({ ...prev, photoUrl: url || "" }))}
+              />
+              <p className="text-xs text-[var(--text-muted)]">A clear recent photo greatly aids identification.</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Full Name <span className="text-[var(--critical)]">*</span></Label>
+              <Input
+                className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border)]"
+                placeholder="Full name"
+                value={addForm.name}
+                onChange={(e) => setAddForm(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Age</Label>
+              <Input
+                type="number"
+                className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border)]"
+                placeholder="Age"
+                value={addForm.age}
+                onChange={(e) => setAddForm(prev => ({ ...prev, age: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>ID Number</Label>
+              <Input
+                className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border)]"
+                placeholder="National ID (optional)"
+                value={addForm.idNumber}
+                onChange={(e) => setAddForm(prev => ({ ...prev, idNumber: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Last Seen Location <span className="text-[var(--critical)]">*</span></Label>
+              <Input
+                className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border)]"
+                placeholder="Last seen location"
+                value={addForm.lastSeenLocation}
+                onChange={(e) => setAddForm(prev => ({ ...prev, lastSeenLocation: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Reporter Name <span className="text-[var(--critical)]">*</span></Label>
+              <Input
+                className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border)]"
+                placeholder="Your name"
+                value={addForm.reporterName}
+                onChange={(e) => setAddForm(prev => ({ ...prev, reporterName: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Reporter Phone <span className="text-[var(--critical)]">*</span></Label>
+              <Input
+                className="bg-[var(--bg-elevated)] text-[var(--text-primary)] border-[var(--border)]"
+                placeholder="Phone number"
+                value={addForm.reporterPhone}
+                onChange={(e) => setAddForm(prev => ({ ...prev, reporterPhone: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => { setAddForm(DEFAULT_ADD_FORM); setAddOpen(false); }}>Cancel</Button>
+            <Button
+              className="bg-[var(--accent)] text-white hover:bg-[var(--accent)]/90"
+              disabled={addSubmitting}
+              onClick={handleAddSave}
+            >
+              {addSubmitting ? "Creating…" : "Create Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
-

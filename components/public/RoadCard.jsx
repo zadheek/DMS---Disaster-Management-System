@@ -1,9 +1,19 @@
 "use client";
+import Link from "next/link";
 import { Construction, ArrowRight, Clock } from "lucide-react";
 import { formatDistanceToNow } from "@/lib/time";
 import StatusBadge from "@/components/shared/StatusBadge";
 import FlagButton from "./FlagButton";
 import { cn } from "@/lib/utils";
+
+const mapHrefForRoad = (road) => {
+  const params = new URLSearchParams({ pinType: "roadAlert", id: String(road.id), zoom: "14" });
+  if (Number.isFinite(Number(road.lat)) && Number.isFinite(Number(road.lng))) {
+    params.set("lat", String(road.lat));
+    params.set("lng", String(road.lng));
+  }
+  return `/map?${params.toString()}`;
+};
 
 export default function RoadCard({ road }) {
   return (
@@ -47,7 +57,16 @@ export default function RoadCard({ road }) {
             {formatDistanceToNow(new Date(road.createdAt), { addSuffix: true })}
           </div>
         </div>
-        <FlagButton targetType="ROAD_ALERT" targetId={road.id} flagCount={road.flagCount} />
+        <div className="flex items-center gap-3">
+          <Link
+            href={mapHrefForRoad(road)}
+            className="text-xs font-bold text-blue-600 transition hover:text-blue-700"
+            aria-label={`Open ${road.roadName} on map`}
+          >
+            Open exact location on map
+          </Link>
+          <FlagButton targetType="ROAD_ALERT" targetId={road.id} flagCount={road.flagCount} />
+        </div>
       </div>
     </div>
   );

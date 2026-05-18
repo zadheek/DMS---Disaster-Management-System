@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+public/sw.js
+public/workbox-*.js
+playwright-report/
+playwright/.auth/
+test-results/
+npm-debug.log*
+.env.local
+.env.*.local

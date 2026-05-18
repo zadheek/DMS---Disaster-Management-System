@@ -9,8 +9,6 @@ import { AlertTriangle, CloudRain, ShieldAlert, Wind, ChevronLeft, ChevronRight 
 import Sidebar from "@/components/shared/Sidebar";
 import TopBar from "@/components/shared/TopBar";
 import FlagButton from "@/components/public/FlagButton";
-import ImageUpload from "@/components/shared/ImageUpload";
-import LocationAssist from "@/components/shared/LocationAssist";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +25,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSocket } from "@/hooks/useSocket";
 import { AlertSchema } from "@/schemas/alert.schema";
+import LocationAssist from "@/components/shared/LocationAssist";
 
 const PAGE_SIZE = 12;
 const TYPES = ["ALL", "LANDSLIDE", "FLOOD", "FIRE", "BUILDING_COLLAPSE"];
@@ -193,7 +192,7 @@ export default function AlertsPage() {
         <main className="flex-1 overflow-y-auto px-6 py-8 motion-fade-up">
           <div className="max-w-4xl">
           <div className="mb-10">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Active Threat Alerts</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">Active Warnings</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
               Real-time early warnings and critical threat broadcasts from meteorological and disaster
               management authorities.
@@ -201,7 +200,7 @@ export default function AlertsPage() {
           </div>
 
           {/* Filters row */}
-          <div className="hidden flex-col sm:flex-row gap-4 mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <Tabs value={activeType} onValueChange={onTabChange} className="flex-1">
               <TabsList className="bg-slate-50 border border-slate-200 flex-wrap h-auto gap-1 p-1">
                 {TYPES.map((t) => (
@@ -248,7 +247,7 @@ export default function AlertsPage() {
             </div>
           ) : (
             <div className="grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {(alerts.length ? alerts.slice(0, 3) : [
+              {(alerts.length ? alerts : [
                 { id: "1", title: "Flood Warning", type: "FLOOD", severity: "HIGH", location: "Kelani River Basin", description: "Water levels rising rapidly. Evacuation recommended for low-lying areas.", lat: 6.9271, lng: 79.8612, createdAt: new Date(Date.now() - 10 * 60_000).toISOString(), icon: CloudRain },
                 { id: "2", title: "Landslide Risk", type: "LANDSLIDE", severity: "CRITICAL", location: "Ratnapura District", description: "Red alert issued by NBRO. Immediate evacuation required.", lat: 6.6828, lng: 80.3992, createdAt: new Date(Date.now() - 3600_000).toISOString(), icon: AlertTriangle },
                 { id: "3", title: "High Winds", type: "OTHER", severity: "MEDIUM", location: "Coastal Belt", description: "Wind speeds up to 60kmph expected. Fishermen advised not to venture out.", lat: 6.0535, lng: 80.221, createdAt: new Date(Date.now() - 3 * 3600_000).toISOString(), icon: Wind },
@@ -399,7 +398,7 @@ export default function AlertsPage() {
                 <Textarea
                   id="description"
                   {...register("description")}
-                  placeholder="Detailed description..."
+                  placeholder="Full description"
                   rows={3}
                   className="bg-[var(--bg-elevated)] border-[var(--border)] resize-none"
                 />
@@ -407,6 +406,11 @@ export default function AlertsPage() {
                   <p className="text-xs text-[var(--critical)]">{errors.description.message}</p>
                 )}
               </div>
+              {/* Hidden fields — populated by LocationAssist below */}
+              <input type="hidden" {...register("location")} />
+              <input type="hidden" {...register("lat", { valueAsNumber: true })} />
+              <input type="hidden" {...register("lng", { valueAsNumber: true })} />
+
               <div className="col-span-2">
                 <LocationAssist
                   currentLat={watch("lat")}
@@ -414,58 +418,18 @@ export default function AlertsPage() {
                   onLocationSelect={({ lat, lng, address }) => {
                     setValue("lat", lat, { shouldValidate: true });
                     setValue("lng", lng, { shouldValidate: true });
-                    if (address) {
-                      setValue("location", address, { shouldValidate: true });
-                    }
+                    setValue(
+                      "location",
+                      address || `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+                      { shouldValidate: true }
+                    );
                   }}
                 />
-              </div>
-              <div className="col-span-2 space-y-1">
-                <Label htmlFor="location" className="text-[var(--text-muted)] text-xs">Location *</Label>
-                <Input
-                  id="location"
-                  {...register("location")}
-                  placeholder="e.g. Kalutara, Bandaragama"
-                  className="bg-[var(--bg-elevated)] border-[var(--border)]"
-                />
-                {errors.location && (
-                  <p className="text-xs text-[var(--critical)]">{errors.location.message}</p>
+                {(errors.location || errors.lat || errors.lng) && (
+                  <p className="text-xs text-[var(--critical)] mt-1">
+                    {errors.location?.message || errors.lat?.message || errors.lng?.message}
+                  </p>
                 )}
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="lat" className="text-[var(--text-muted)] text-xs">Latitude *</Label>
-                <Input
-                  id="lat"
-                  type="number"
-                  step="any"
-                  {...register("lat", { valueAsNumber: true })}
-                  placeholder="7.8731"
-                  className="bg-[var(--bg-elevated)] border-[var(--border)]"
-                />
-                {errors.lat && <p className="text-xs text-[var(--critical)]">{errors.lat.message}</p>}
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="lng" className="text-[var(--text-muted)] text-xs">Longitude *</Label>
-                <Input
-                  id="lng"
-                  type="number"
-                  step="any"
-                  {...register("lng", { valueAsNumber: true })}
-                  placeholder="80.7718"
-                  className="bg-[var(--bg-elevated)] border-[var(--border)]"
-                />
-                {errors.lng && <p className="text-xs text-[var(--critical)]">{errors.lng.message}</p>}
-              </div>
-
-              <div className="col-span-2 space-y-1">
-                <Label className="text-[var(--text-muted)] text-xs">Photo (optional)</Label>
-                <input type="hidden" {...register("photoUrl")} />
-                <ImageUpload
-                  onUpload={(url) => setValue("photoUrl", url ?? "", { shouldDirty: true, shouldValidate: true })}
-                  label="Upload photo"
-                />
               </div>
 
               <div className="space-y-1">
@@ -486,7 +450,7 @@ export default function AlertsPage() {
                 <Input
                   id="reporterPhone"
                   {...register("reporterPhone")}
-                  placeholder="+94 77 123 4567"
+                  placeholder="Phone"
                   className="bg-[var(--bg-elevated)] border-[var(--border)]"
                 />
                 {errors.reporterPhone && (
@@ -509,7 +473,7 @@ export default function AlertsPage() {
                 disabled={submitting}
                 className="flex-1 bg-[var(--critical)] hover:bg-[var(--critical)]/80 text-white"
               >
-                {submitting ? "Submitting..." : "Submit Alert"}
+                {submitting ? "Submitting..." : "Submit"}
               </Button>
             </div>
           </form>
@@ -518,4 +482,3 @@ export default function AlertsPage() {
     </div>
   );
 }
-

@@ -273,8 +273,10 @@ export default function AdminCampsPage() {
                   className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-primary)] h-9 rounded-md px-3 text-sm focus:ring-1 focus:ring-[var(--accent)] outline-none"
                 >
                   <option value="">All Camps</option>
-                  {camps.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                  {camps.map((c, index) => (
+                    <option key={c.id} value={c.id}>
+                      Camp {index + 1} - {c.location}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -597,4 +599,3 @@ export default function AdminCampsPage() {
     </div>
   );
 }
-
